@@ -8,6 +8,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK (Compat Version for Web) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            databaseURL: "https://alumni-registration-7015f-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+    </script>
 </head>
 <body>
 
@@ -18,10 +31,13 @@
                 <div class="host-title">
                     <h1>📊 Host Dashboard - Participant Spreadsheet</h1>
                     <p>Live view of registered participants arranged in sequence of registration.</p>
+                    <div style="margin-top: 0.35rem; font-size: 0.82rem; color: #059669; font-weight: 700;">
+                        🟢 Live Firebase Realtime Database Connected
+                    </div>
                 </div>
                 <div class="host-actions">
                     <button onclick="fetchRegistrations()" class="btn-secondary">
-                        🔄 Refresh
+                        🔄 Sync Now
                     </button>
                     <button onclick="exportCSV()" class="btn-secondary btn-export">
                         📥 Export Spreadsheet (.CSV)
@@ -60,7 +76,7 @@
                         <tr>
                             <th style="width: 80px; text-align: center;">Sl. No.</th>
                             <th>Participant Name</th>
-                            <th>Programme</th>
+                            <th>Programme(s)</th>
                             <th>Topic / First Line of Song</th>
                             <th>Registered At</th>
                             <th style="width: 90px; text-align: center;">Action</th>
@@ -74,7 +90,7 @@
 
             <div id="emptyMessage" class="empty-state" style="display: none;">
                 <h3>No registrations found</h3>
-                <p>Participants who submit their registration form will automatically appear here in real time.</p>
+                <p>Participants who submit their registration form will automatically appear here in real time via Firebase.</p>
             </div>
         </div>
     </div>

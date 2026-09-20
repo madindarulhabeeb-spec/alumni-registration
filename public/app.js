@@ -1,6 +1,5 @@
 const TOPIC_PROGRAMMES = ['Malayalam Speech', 'Kathaprasangam', 'Conversation Malayalam'];
 
-// Store intermediate values while user edits
 let pendingRegistration = {
     name: '',
     programmes: []
@@ -10,7 +9,6 @@ function updateDynamicFields() {
     const checkedBoxes = Array.from(document.querySelectorAll('input[name="programme"]:checked'));
     const container = document.getElementById('dynamicDetailsContainer');
 
-    // Preserve already typed values when checkboxes change
     const currentValues = {};
     document.querySelectorAll('.dynamic-programme-input').forEach(input => {
         const prog = input.getAttribute('data-programme');
@@ -90,13 +88,11 @@ function handleProceedToReview(event) {
         });
     }
 
-    // Save pending registration
     pendingRegistration = {
         name: name,
         programmes: programmesList
     };
 
-    // Render Review Screen
     document.getElementById('reviewName').textContent = name;
     
     const reviewListContainer = document.getElementById('reviewProgrammesList');
@@ -112,13 +108,11 @@ function handleProceedToReview(event) {
         </div>
     `).join('');
 
-    // Switch view to Review Card
     document.getElementById('registrationCard').style.display = 'none';
     document.getElementById('reviewCard').style.display = 'block';
 }
 
 function backToEdit() {
-    // Return to form card without clearing typed values
     document.getElementById('reviewCard').style.display = 'none';
     document.getElementById('registrationCard').style.display = 'block';
 }
@@ -126,56 +120,82 @@ function backToEdit() {
 async function confirmAndSubmit() {
     const finalBtn = document.getElementById('finalSubmitBtn');
     finalBtn.disabled = true;
-    finalBtn.textContent = 'Submitting...';
+    finalBtn.textContent = 'Submitting to Firebase...';
 
+    const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+    const payload = {
+        name: pendingRegistration.name,
+        programmes: pendingRegistration.programmes,
+        registeredAt: timestamp
+    };
+
+    let submittedSuccessfully = false;
+    let assignedSlNo = 1;
+
+    // 1. Write directly to Firebase if initialized
+    if (typeof firebase !== 'undefined' && firebase.database) {
+        try {
+            const dbRef = firebase.database().ref('registrations');
+            
+            // Get current count for Sl. No.
+            const snapshot = await dbRef.once('value');
+            const currentData = snapshot.val() || {};
+            assignedSlNo = Object.keys(currentData).length + 1;
+
+            payload.slNo = assignedSlNo;
+            const newPostRef = dbRef.push();
+            await newPostRef.set(payload);
+            submittedSuccessfully = true;
+        } catch (fbErr) {
+            console.warn('Direct Firebase client SDK warning, falling back to server API:', fbErr);
+        }
+    }
+
+    // 2. Also send to local backend server
     try {
         const response = await fetch('/api/register', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(pendingRegistration)
         });
-
         const data = await response.json();
-
         if (response.ok && data.success) {
-            // Render confirmation details
-            document.getElementById('confirmName').textContent = data.registration.name;
-            document.getElementById('confirmSlNo').textContent = '#' + data.registration.slNo;
-
-            const confirmListContainer = document.getElementById('confirmProgrammesList');
-            confirmListContainer.innerHTML = data.registration.programmes.map((item, idx) => `
-                <div style="background: #f8fafc; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 0.5rem; font-size: 0.92rem;">
-                    <span style="font-weight: 700; color: #3730a3;">${idx + 1}. ${escapeHtml(item.programme)}</span>
-                    <div style="color: #475569; margin-top: 0.2rem;">
-                        <strong>[${escapeHtml(item.detailType)}]:</strong> ${escapeHtml(item.detail)}
-                    </div>
-                </div>
-            `).join('');
-
-            // Show confirmation screen
-            document.getElementById('reviewCard').style.display = 'none';
-            document.getElementById('confirmationBox').style.display = 'block';
-        } else {
-            alert('Error: ' + (data.error || 'Failed to submit registration.'));
+            submittedSuccessfully = true;
+            assignedSlNo = data.registration.slNo || assignedSlNo;
         }
-    } catch (error) {
-        console.error('Submission failed:', error);
-        alert('Failed to connect to the server. Please try again.');
-    } finally {
-        finalBtn.disabled = false;
-        finalBtn.textContent = '✅ Confirm & Submit';
+    } catch (apiErr) {
+        console.warn('Local API call bypassed (using direct Firebase):', apiErr);
     }
+
+    if (submittedSuccessfully) {
+        document.getElementById('confirmName').textContent = payload.name;
+        document.getElementById('confirmSlNo').textContent = '#' + assignedSlNo;
+
+        const confirmListContainer = document.getElementById('confirmProgrammesList');
+        confirmListContainer.innerHTML = payload.programmes.map((item, idx) => `
+            <div style="background: #f8fafc; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 0.5rem; font-size: 0.92rem;">
+                <span style="font-weight: 700; color: #3730a3;">${idx + 1}. ${escapeHtml(item.programme)}</span>
+                <div style="color: #475569; margin-top: 0.2rem;">
+                    <strong>[${escapeHtml(item.detailType)}]:</strong> ${escapeHtml(item.detail)}
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('reviewCard').style.display = 'none';
+        document.getElementById('confirmationBox').style.display = 'block';
+    } else {
+        alert('Failed to submit registration. Please check your internet connection.');
+    }
+
+    finalBtn.disabled = false;
+    finalBtn.textContent = '✅ Confirm & Submit';
 }
 
 function registerAnother() {
-    // Reset form and pending state
     document.getElementById('registrationForm').reset();
     document.getElementById('dynamicDetailsContainer').innerHTML = '';
     pendingRegistration = { name: '', programmes: [] };
 
-    // Toggle view back to form
     document.getElementById('confirmationBox').style.display = 'none';
     document.getElementById('registrationCard').style.display = 'block';
 }

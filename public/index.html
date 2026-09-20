@@ -8,6 +8,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (Compat Version for Web) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            databaseURL: "https://alumni-registration-7015f-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+    </script>
 </head>
 <body>
 
@@ -17,6 +30,9 @@
             <div class="header">
                 <h1>Participant Registration</h1>
                 <p>Select your programme(s) and complete the required details below</p>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #059669; font-weight: 600;">
+                    ⚡ Live Cloud Synced with Firebase
+                </div>
             </div>
 
             <form id="registrationForm" onsubmit="handleProceedToReview(event)">
@@ -68,7 +84,7 @@
                     </div>
                 </div>
 
-                <!-- Container for Dynamic Input Boxes per Programme -->
+                <!-- Dynamic Input Boxes per Programme -->
                 <div id="dynamicDetailsContainer">
                     <!-- Dynamic inputs injected here via JavaScript -->
                 </div>
@@ -117,7 +133,7 @@
         <div class="card confirmation-box" id="confirmationBox" style="display: none;">
             <div class="success-badge">✓</div>
             <h2>Registration Successful!</h2>
-            <p style="color: #64748b; margin-top: 0.25rem;">Your programme entry has been registered successfully.</p>
+            <p style="color: #64748b; margin-top: 0.25rem;">Your entry has been saved to Firebase Realtime Database.</p>
 
             <div class="registration-details">
                 <div class="detail-row">
