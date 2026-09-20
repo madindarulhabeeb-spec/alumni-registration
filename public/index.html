@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programme Registration</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <!-- 1. Form Entry Card -->
+        <div class="card" id="registrationCard">
+            <div class="header">
+                <h1>Participant Registration</h1>
+                <p>Select your programme(s) and complete the required details below</p>
+            </div>
+
+            <form id="registrationForm" onsubmit="handleProceedToReview(event)">
+                <!-- Participant Name -->
+                <div class="form-group">
+                    <label class="form-label" for="participantName">
+                        Participant Name <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="participantName" 
+                        class="input-box" 
+                        placeholder="Enter your full name" 
+                        required 
+                        autocomplete="off"
+                    >
+                </div>
+
+                <!-- Programme Options (Checkboxes for Multi-Select) -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Select Programme(s) <span class="required">* (You can choose multiple)</span>
+                    </label>
+                    <div class="programme-selector">
+                        <div class="programme-option">
+                            <input type="checkbox" id="prog1" name="programme" value="Malayalam Speech" onchange="updateDynamicFields()">
+                            <label for="prog1">Malayalam Speech</label>
+                        </div>
+                        <div class="programme-option">
+                            <input type="checkbox" id="prog2" name="programme" value="Madh Song" onchange="updateDynamicFields()">
+                            <label for="prog2">Madh Song</label>
+                        </div>
+                        <div class="programme-option">
+                            <input type="checkbox" id="prog3" name="programme" value="Mappilappattu" onchange="updateDynamicFields()">
+                            <label for="prog3">Mappilappattu</label>
+                        </div>
+                        <div class="programme-option">
+                            <input type="checkbox" id="prog4" name="programme" value="Kathaprasangam" onchange="updateDynamicFields()">
+                            <label for="prog4">Kathaprasangam</label>
+                        </div>
+                        <div class="programme-option">
+                            <input type="checkbox" id="prog5" name="programme" value="Group Song" onchange="updateDynamicFields()">
+                            <label for="prog5">Group Song</label>
+                        </div>
+                        <div class="programme-option">
+                            <input type="checkbox" id="prog6" name="programme" value="Conversation Malayalam" onchange="updateDynamicFields()">
+                            <label for="prog6">Conversation Malayalam</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Container for Dynamic Input Boxes per Programme -->
+                <div id="dynamicDetailsContainer">
+                    <!-- Dynamic inputs injected here via JavaScript -->
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    Proceed to Review & Edit ➔
+                </button>
+            </form>
+        </div>
+
+        <!-- 2. Review & Edit Preview Card -->
+        <div class="card" id="reviewCard" style="display: none;">
+            <div class="header">
+                <h1>Review Your Registration</h1>
+                <p>Please double-check your information before final submission.</p>
+            </div>
+
+            <div class="registration-details" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 1.5rem;">
+                <div class="detail-row" style="padding-bottom: 0.8rem; border-bottom: 2px solid #cbd5e1;">
+                    <span class="label" style="font-size: 1rem;">Participant Name</span>
+                    <span class="value" id="reviewName" style="font-size: 1.1rem; color: #4f46e5;">-</span>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 0.75rem;">
+                        Selected Programme(s) & Details
+                    </h3>
+                    <div id="reviewProgrammesList">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action buttons: Edit vs Confirm -->
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                <button type="button" onclick="backToEdit()" class="btn-secondary" style="flex: 1; padding: 0.9rem; justify-content: center; font-size: 1rem;">
+                    ✏️ Edit Details
+                </button>
+                <button type="button" onclick="confirmAndSubmit()" class="btn-submit" id="finalSubmitBtn" style="flex: 1.5; margin-top: 0; padding: 0.9rem; font-size: 1rem;">
+                    ✅ Confirm & Submit
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. Final Success Confirmation Card -->
+        <div class="card confirmation-box" id="confirmationBox" style="display: none;">
+            <div class="success-badge">✓</div>
+            <h2>Registration Successful!</h2>
+            <p style="color: #64748b; margin-top: 0.25rem;">Your programme entry has been registered successfully.</p>
+
+            <div class="registration-details">
+                <div class="detail-row">
+                    <span class="label">Participant Name</span>
+                    <span class="value" id="confirmName">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Registration Order</span>
+                    <span class="value" id="confirmSlNo"># -</span>
+                </div>
+                <div style="margin-top: 1rem; text-align: left;">
+                    <span class="label" style="display: block; margin-bottom: 0.5rem;">Registered Programmes</span>
+                    <div id="confirmProgrammesList">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disclaimer Notice for Participants -->
+            <div class="disclaimer-card">
+                <div class="disclaimer-title">⚠️ Important Notice</div>
+                <div class="disclaimer-text">the programmes should less than 5 minutes</div>
+            </div>
+
+            <button onclick="registerAnother()" class="btn-secondary" style="margin-top: 1.5rem; width: 100%; justify-content: center;">
+                Register Another Participant
+            </button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
